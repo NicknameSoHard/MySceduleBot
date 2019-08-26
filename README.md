@@ -1,2 +1,2 @@
-# MySceduleBot
-Little bot for parsing google sheets tables and texting scedule for responce
+# MyWalletBot
+Little bot for control finanses with Telegram and Google Sheets
