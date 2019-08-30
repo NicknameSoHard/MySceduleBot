@@ -50,6 +50,7 @@ def new_operation(message):
 
 def get_category_or_amount(message, category_type, category_list, category, amount):
     user_id = message.chat.id
+    result_message = 'Непредвиденная штука.'
     if message.text in category_list:
         category = message.text
         if amount is None:
@@ -61,7 +62,7 @@ def get_category_or_amount(message, category_type, category_list, category, amou
                 result_message = 'Теперь введите категорию.'
         except ValueError:
             result_message = 'Ошибка. Введите или выберете еще раз.'
-            new_operation(message)
+            get_text_messages(message)
 
     if amount is not None and category is not None:
         result = ssw.new_value_for_day(category_type, category, amount)
@@ -78,4 +79,5 @@ def get_category_or_amount(message, category_type, category_list, category, amou
 
 
 if __name__ == '__main__':
-  bot.polling(none_stop=True)
+    print('Бот запущен.')
+    bot.polling(none_stop=True)

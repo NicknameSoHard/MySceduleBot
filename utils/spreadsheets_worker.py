@@ -24,20 +24,20 @@ class SpreadsheetsWorker:
         self.sheets = sh
         self.worksheets = self.sheets.worksheets()
 
-        self.month_names = month_name.month_names
-        self.days_cell_range = os.getenv('OUTLAY_CELL', 'G3:AK11')
-
-        self.current_worksheet = self.__auto_set_current_worksheet()
-        self.current_day = self.__auto_set_current_day()
-
         self.outlay_category_cells = os.getenv('CATEGORY_OUTLAY_CELLS', 'B3:D12')
-        self.outlay_category_dict = self.__get_category_list(self.outlay_category_cells)
-
         self.income_category_cells = os.getenv('CATEGORY_INCOME_CELLS', 'B21:D24')
-        self.income_category_dict = self.__get_category_list(self.income_category_cells)
 
+        self.month_names = month_name.month_names
+        self.outlay_cell_range = os.getenv('OUTLAY_CELL', 'G3:AK11')
         self.income_cell_range = os.getenv('INCOME_CELLS', 'E21:E24')
+
+        self.current_worksheet = None
+        self.current_day = None
+
         self.income_column = self.current_worksheet.acell(self.income_cell_range.split(':')[0]).col
+
+        self.outlay_category_dict = self.__get_category_list(self.outlay_category_cells)
+        self.income_category_dict = self.__get_category_list(self.income_category_cells)
 
     def get_category_list(self, category_type='outlay'):
         if category_type == 'outlay':
@@ -48,6 +48,7 @@ class SpreadsheetsWorker:
             return None
 
     def new_value_for_day(self, category_type, category, value):
+        self.current_day = self.__auto_set_current_day()
         if category_type == 'outlay':
             row = self.outlay_category_dict[category]
             column = self.current_day.col
@@ -86,6 +87,8 @@ class SpreadsheetsWorker:
 
     def __auto_set_current_day(self):
         today = str(datetime.datetime.today().day)
+        if today == 1 or self.current_worksheet is None:
+            self.current_worksheet = self.__auto_set_current_worksheet()
         cell = self.current_worksheet.find(today)
         return cell
 
@@ -99,9 +102,15 @@ class SpreadsheetsWorker:
     def __add_new_wallet_worksheet(self, title):
         self.worksheets[-1].duplicate(new_sheet_name=title)
         worksheet = self.get_worksheets(title)
+        self.__clear_cells_range(worksheet, self.outlay_cell_range)
+        self.__clear_cells_range(worksheet, self.income_cell_range)
+        return worksheet
 
-        cell_list = worksheet.range(self.days_cell_range)
+    def __clear_cells_range(self, worksheet, cells):
+        cell_list = worksheet.range(cells)
         for cell in cell_list:
             cell.value = ''
         worksheet.update_cells(cell_list)
-        return worksheet
+
+
+a = SpreadsheetsWorker()
