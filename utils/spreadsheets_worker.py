@@ -31,8 +31,8 @@ class SpreadsheetsWorker:
         self.outlay_cell_range = os.getenv('OUTLAY_CELL', 'G3:AK11')
         self.income_cell_range = os.getenv('INCOME_CELLS', 'E21:E24')
 
-        self.current_worksheet = None
-        self.current_day = None
+        self.current_worksheet = self.__auto_set_current_worksheet()
+        self.current_day = self.__auto_set_current_day()
 
         self.income_column = self.current_worksheet.acell(self.income_cell_range.split(':')[0]).col
 
@@ -106,11 +106,9 @@ class SpreadsheetsWorker:
         self.__clear_cells_range(worksheet, self.income_cell_range)
         return worksheet
 
-    def __clear_cells_range(self, worksheet, cells):
+    @staticmethod
+    def __clear_cells_range(worksheet, cells):
         cell_list = worksheet.range(cells)
         for cell in cell_list:
             cell.value = ''
         worksheet.update_cells(cell_list)
-
-
-a = SpreadsheetsWorker()
