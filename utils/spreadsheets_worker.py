@@ -8,7 +8,7 @@ from enums import month_name
 
 class SpreadsheetsWorker:
     def __init__(self):
-        credentials = os.getenv('CREDENTIALS_FILE', '../config/creds.json')
+        credentials = os.getenv('CREDENTIALS_FILE', './config/creds.json')
         scope = ['https://spreadsheets.google.com/feeds',
                  'https://www.googleapis.com/auth/drive']
         credentials = ServiceAccountCredentials.from_json_keyfile_name(credentials, scope)
@@ -25,9 +25,6 @@ class SpreadsheetsWorker:
         self.worksheets = self.sheets.worksheets()
 
         self.month_names = month_name.month_names
-        #self.first_day_outlay_cell = os.getenv('FIRST_DAY_OUTLAY_CELL', 'G3')
-        #self.last_day_outlay_cell = os.getenv('LAST_DAY_OUTLAY_CELL', 'AK11')
-        #self.days_cell_range = f"{self.first_day_outlay_cell}:{self.last_day_outlay_cell}"
         self.days_cell_range = os.getenv('OUTLAY_CELL', 'G3:AK11')
 
         self.current_worksheet = self.__auto_set_current_worksheet()
@@ -35,6 +32,9 @@ class SpreadsheetsWorker:
 
         self.category_cells = os.getenv('CATEGORY_CELLS', 'B3:D12')
         self.category_dict = self.__get_category_list()
+
+    def get_category_list(self):
+        return list(self.category_dict.keys())
 
     def new_values_for_day(self, category, value):
         row = self.category_dict[category]
