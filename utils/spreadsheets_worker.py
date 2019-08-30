@@ -30,15 +30,30 @@ class SpreadsheetsWorker:
         self.current_worksheet = self.__auto_set_current_worksheet()
         self.current_day = self.__auto_set_current_day()
 
-        self.category_cells = os.getenv('CATEGORY_CELLS', 'B3:D12')
-        self.category_dict = self.__get_category_list()
+        self.outlay_category_cells = os.getenv('CATEGORY_OUTLAY_CELLS', 'B3:D12')
+        self.outlay_category_dict = self.__get_category_list(self.outlay_category_cells)
 
-    def get_category_list(self):
-        return list(self.category_dict.keys())
+        self.income_category_cells = os.getenv('CATEGORY_INCOME_CELLS', 'B21:D24')
+        self.income_category_dict = self.__get_category_list(self.income_category_cells)
 
-    def new_values_for_day(self, category, value):
-        row = self.category_dict[category]
-        column = self.current_day.col
+        self.income_cell_range = os.getenv('INCOME_CELLS', 'E21:E24')
+        self.income_column = self.current_worksheet.acell(self.income_cell_range.split(':')[0]).col
+
+    def get_category_list(self, category_type='outlay'):
+        if category_type == 'outlay':
+            return list(self.outlay_category_dict.keys())
+        elif category_type == 'income':
+            return list(self.income_category_dict.keys())
+        else:
+            return None
+
+    def new_value_for_day(self, category_type, category, value):
+        if category_type == 'outlay':
+            row = self.outlay_category_dict[category]
+            column = self.current_day.col
+        else:
+            row = self.income_category_dict[category]
+            column = self.income_column
         current_values = self.current_worksheet.cell(row=row, col=column).value
         if current_values:
             value += int(current_values)
@@ -64,10 +79,10 @@ class SpreadsheetsWorker:
         except gc.IncorrectCellLabel:
             return False
 
-    def __get_category_list(self):
-        cell_list = self.current_worksheet.range(self.category_cells)
-        category_dict = {x.value: x.row for x in cell_list if x.value}
-        return category_dict
+    def __get_category_list(self, category_cells):
+        cell_list = self.current_worksheet.range(category_cells)
+        outlay_category_dict = {x.value: x.row for x in cell_list if x.value}
+        return outlay_category_dict
 
     def __auto_set_current_day(self):
         today = str(datetime.datetime.today().day)
@@ -90,8 +105,3 @@ class SpreadsheetsWorker:
             cell.value = ''
         worksheet.update_cells(cell_list)
         return worksheet
-
-
-a = SpreadsheetsWorker()
-a.new_values_for_day('Продукты', 100)
-#a.update_cell('A0', 'Jopa')
