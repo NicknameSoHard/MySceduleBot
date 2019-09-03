@@ -5,6 +5,8 @@ from oauth2client.service_account import ServiceAccountCredentials
 
 from enums import month_name
 
+from utils.logger import Logger
+
 
 class SpreadsheetsWorker:
     def __init__(self):
@@ -29,7 +31,7 @@ class SpreadsheetsWorker:
 
         self.month_names = month_name.month_names
         self.outlay_cell_range = os.getenv('OUTLAY_CELL', 'G3:AK11')
-        self.income_cell_range = os.getenv('INCOME_CELLS', 'E21:E24')
+        self.income_cell_range = os.getenv('INCOME_CELLS', 'E20:E23')
 
         self.current_worksheet = self.__auto_set_current_worksheet()
         self.current_day = self.__auto_set_current_day()
@@ -38,6 +40,7 @@ class SpreadsheetsWorker:
 
         self.outlay_category_dict = self.__get_category_list(self.outlay_category_cells)
         self.income_category_dict = self.__get_category_list(self.income_category_cells)
+        self.logger = Logger().get_logger()
 
     def get_category_list(self, category_type='outlay'):
         if category_type == 'outlay':
@@ -59,6 +62,7 @@ class SpreadsheetsWorker:
         if current_values:
             value += int(current_values)
         success = self.__update_cell((row, column), value)
+        self.logger.info(f'Added new value in ({row},{column}).')
         return success
 
     def get_worksheets(self, id_worksheets):
@@ -78,6 +82,7 @@ class SpreadsheetsWorker:
                 self.current_worksheet.update_cell(*coords, value)
             return True
         except gc.IncorrectCellLabel:
+            self.logger.error(f'Incorrect cell label {coords}.')
             return False
 
     def __get_category_list(self, category_cells):
@@ -89,6 +94,7 @@ class SpreadsheetsWorker:
         today = str(datetime.datetime.today().day)
         if today == 1 or self.current_worksheet is None:
             self.current_worksheet = self.__auto_set_current_worksheet()
+            self.logger.info(f'Auto set new worksheet with name {self.current_worksheet.title}.')
         cell = self.current_worksheet.find(today)
         return cell
 
@@ -97,6 +103,7 @@ class SpreadsheetsWorker:
         current_worksheet = self.get_worksheets(month)
         if current_worksheet is None:
             current_worksheet = self.__add_new_wallet_worksheet(title=month)
+            self.logger.info(f'Added new worksheet with name {current_worksheet.title}.')
         return current_worksheet
 
     def __add_new_wallet_worksheet(self, title):
