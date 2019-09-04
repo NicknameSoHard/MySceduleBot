@@ -27,7 +27,7 @@ class SpreadsheetsWorker:
         self.worksheets = self.sheets.worksheets()
 
         self.outlay_category_cells = os.getenv('CATEGORY_OUTLAY_CELLS', 'B3:D12')
-        self.income_category_cells = os.getenv('CATEGORY_INCOME_CELLS', 'B21:D24')
+        self.income_category_cells = os.getenv('CATEGORY_INCOME_CELLS', 'B20:D23')
 
         self.month_names = month_name.month_names
         self.outlay_cell_range = os.getenv('OUTLAY_CELL', 'G3:AK11')
